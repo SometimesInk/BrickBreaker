@@ -3,7 +3,7 @@ package com.example.brickbreaker;
 public class Ball {
     private int x;
     private int y;
-    private int radius;
+    private final int radius;
     private int xSpeed;
     private int ySpeed;
 
@@ -25,14 +25,6 @@ public class Ball {
     }
 
     public void bounceY() {
-        ySpeed *= -1;
-    }
-
-    public void invertXSpeed() {
-        xSpeed *= -1;
-    }
-
-    public void invertYSpeed() {
         ySpeed *= -1;
     }
 
