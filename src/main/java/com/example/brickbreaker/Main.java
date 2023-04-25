@@ -15,10 +15,13 @@ public class Main extends Application {
 
     Wall[] walls;
     Rectangle[] wallRectangles;
+
     Ball ball;
     Rectangle ballRectangle;
+
     Paddle paddle;
     Rectangle paddleRectangle;
+
     boolean gameOver;
 
     public static void main(String[] args) {
@@ -135,6 +138,7 @@ public class Main extends Application {
 
     public void initializeComponents(Pane root)
     {
+
         //makes the game not over
         gameOver = false;
 
