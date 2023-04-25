@@ -2,28 +2,33 @@ package com.example.brickbreaker;
 
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
-import javafx.event.EventHandler;
-import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.shape.Rectangle;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
+import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
-import java.io.IOException;
-
 public class Main extends Application {
+
+    Wall[] walls;
+    Rectangle[] wallRectangles;
+    Ball ball;
+    Rectangle ballRectangle;
+    Paddle paddle;
+    Rectangle paddleRectangle;
+    boolean gameOver;
 
     public static void main(String[] args) {
         launch(args);
     }
 
     @Override
-    public void start(Stage primaryStage) throws IOException {
+    public void start(Stage primaryStage) {
 
         //create the window
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("sample.fxml"));
         primaryStage.setTitle("Brick Breaker");
         Pane root = new Pane();
         primaryStage.setScene(new Scene(root, 310, 250));
@@ -31,60 +36,7 @@ public class Main extends Application {
         primaryStage.setResizable(false);
         primaryStage.show();
 
-        //create the ball
-        Ball ball = new Ball(150, 125, 10, 1, 1);
-
-        //draws a cube for the retro look
-        Rectangle rect = new Rectangle(ball.getX(), ball.getY(), ball.getRadius(), ball.getRadius());
-        rect.setFill(javafx.scene.paint.Color.WHITE);
-        root.getChildren().add(rect);
-
-        //initialize the wall positions
-        Wall[] walls = {
-            new Wall(10, 10, 40, 10),
-            new Wall(60, 10, 40, 10),
-            new Wall(110, 10, 40, 10),
-            new Wall(160, 10, 40, 10),
-            new Wall(210, 10, 40, 10),
-            new Wall(260, 10, 40, 10),
-            new Wall(10, 30, 40, 10),
-            new Wall(60, 30, 40, 10),
-            new Wall(110, 30, 40, 10),
-            new Wall(160, 30, 40, 10),
-            new Wall(210, 30, 40, 10),
-            new Wall(260, 30, 40, 10),
-            new Wall(10, 50, 40, 10),
-            new Wall(60, 50, 40, 10),
-            new Wall(110, 50, 40, 10),
-            new Wall(160, 50, 40, 10),
-            new Wall(210, 50, 40, 10),
-            new Wall(260, 50, 40, 10),
-            new Wall(10, 70, 40, 10),
-            new Wall(60, 70, 40, 10),
-            new Wall(110, 70, 40, 10),
-            new Wall(160, 70, 40, 10),
-            new Wall(210, 70, 40, 10),
-            new Wall(260, 70, 40, 10),
-        };
-
-        Rectangle[] wallRects = new Rectangle[walls.length];
-
-        for (int i = 0; i < walls.length; i++) {
-            wallRects[i] = new Rectangle(walls[i].getX(), walls[i].getY(), walls[i].getWidth(), walls[i].getHeight());
-            wallRects[i].setFill(javafx.scene.paint.Color.WHITE);
-            root.getChildren().add(wallRects[i]);
-        }
-
-        //create the paddle
-        Paddle paddle = new Paddle(150, 200, 50, 10, 5);
-
-        //draw the paddle
-        Rectangle paddleRect = new Rectangle(paddle.getX(), paddle.getY(), paddle.getWidth(), paddle.getHeight());
-        paddleRect.setFill(javafx.scene.paint.Color.WHITE);
-        root.getChildren().add(paddleRect);
-
-        //randomize the starting direction of the ball
-        ball.randomizeDirection();
+        initializeComponents(root);
 
         //game loop
         AnimationTimer gameLoop = new AnimationTimer() {
@@ -108,7 +60,7 @@ public class Main extends Application {
                                 //find which wall was hit and remove it
                                 for (int i = 0; i < walls.length; i++) {
                                     if (wall.getX() == walls[i].getX() && wall.getY() == walls[i].getY()) {
-                                        walls[i].destroy(root, wallRects[i]);
+                                        walls[i].destroy(root, wallRectangles[i]);
                                     }
                                 }
                             }
@@ -126,40 +78,118 @@ public class Main extends Application {
 
                 //check for collisions with the bottom of the window
                 if (ball.getY() + ball.getRadius() >= root.getHeight()) {
+                    gameOver = true;
                     ball.stop();
+                    //show the game over screen
+                    Text gameOver = new Text("GAME OVER");
+                    gameOver.setFont(Font.font("Verdana", FontWeight.BOLD, 30));
+                    gameOver.setFill(javafx.scene.paint.Color.WHITE);
+                    gameOver.setX(50);
+                    gameOver.setY(125);
+                    root.getChildren().add(gameOver);
+                    //show the restart text under the game over screen
+                    Text restart = new Text("Press any button to restart");
+                    restart.setFont(Font.font("Verdana", FontWeight.BOLD, 15));
+                    restart.setFill(javafx.scene.paint.Color.WHITE);
+                    restart.setX(50);
+                    restart.setY(175);
+                    root.getChildren().add(restart);
                 }
 
                 //update the ball's position
                 ball.move();
 
                 //update the cube's position
-                rect.setX(ball.getX());
-                rect.setY(ball.getY());
+                ballRectangle.setX(ball.getX());
+                ballRectangle.setY(ball.getY());
 
                 //get the key pressed and move the paddle accordingly
                 root.requestFocus();
-                root.setOnKeyPressed(new EventHandler<KeyEvent>() {
-                    @Override
-                    public void handle(KeyEvent event) {
-                        if (event.getCode() == KeyCode.LEFT) {
-                            paddle.moveLeft();
-                        } else if (event.getCode() == KeyCode.RIGHT) {
-                            paddle.moveRight();
-                        }
+                root.setOnKeyPressed(event -> {
+                    if (event.getCode() == KeyCode.LEFT) {
+                        paddle.moveLeft();
+                    } else if (event.getCode() == KeyCode.RIGHT) {
+                        paddle.moveRight();
+                    }
+
+                    if(gameOver)
+                    {
+                        root.getChildren().clear();
+                        initializeComponents(root);
                     }
                 });
                 if(paddle.getX() <= 0) {
                     paddle.setX(0);
                 }
-                if(paddle.getX() >= 310) {
-                    paddle.setX(310);
+                if(paddle.getX() >= 310 - paddle.getWidth()) {
+                    paddle.setX(310 - paddle.getWidth());
                 }
 
                 //update the paddle's position
-                paddleRect.setX(paddle.getX());
-                paddleRect.setY(paddle.getY());
+                paddleRectangle.setX(paddle.getX());
+                paddleRectangle.setY(paddle.getY());
             }
         };
         gameLoop.start();
+    }
+
+    public void initializeComponents(Pane root)
+    {
+        //makes the game not over
+        gameOver = false;
+
+        //create the ball
+        ball = new Ball(150, 125, 10, 1, 1);
+
+        //draws a cube for the retro look
+        ballRectangle = new Rectangle(ball.getX(), ball.getY(), ball.getRadius(), ball.getRadius());
+        ballRectangle.setFill(javafx.scene.paint.Color.WHITE);
+        root.getChildren().add(ballRectangle);
+
+        walls = new Wall[] {
+                new Wall(10, 10, 40, 10),
+                new Wall(60, 10, 40, 10),
+                new Wall(110, 10, 40, 10),
+                new Wall(160, 10, 40, 10),
+                new Wall(210, 10, 40, 10),
+                new Wall(260, 10, 40, 10),
+                new Wall(10, 30, 40, 10),
+                new Wall(60, 30, 40, 10),
+                new Wall(110, 30, 40, 10),
+                new Wall(160, 30, 40, 10),
+                new Wall(210, 30, 40, 10),
+                new Wall(260, 30, 40, 10),
+                new Wall(10, 50, 40, 10),
+                new Wall(60, 50, 40, 10),
+                new Wall(110, 50, 40, 10),
+                new Wall(160, 50, 40, 10),
+                new Wall(210, 50, 40, 10),
+                new Wall(260, 50, 40, 10),
+                new Wall(10, 70, 40, 10),
+                new Wall(60, 70, 40, 10),
+                new Wall(110, 70, 40, 10),
+                new Wall(160, 70, 40, 10),
+                new Wall(210, 70, 40, 10),
+                new Wall(260, 70, 40, 10),
+        };
+
+        wallRectangles = new Rectangle[walls.length];
+
+        for (int i = 0; i < walls.length; i++) {
+            wallRectangles[i] = new Rectangle(walls[i].getX(), walls[i].getY(), walls[i].getWidth(), walls[i].getHeight());
+            wallRectangles[i].setFill(javafx.scene.paint.Color.WHITE);
+            root.getChildren().add(wallRectangles[i]);
+        }
+
+        //create the paddle
+        paddle = new Paddle(150, 200, 50, 10, 5);
+
+        //draw the paddle
+        paddleRectangle = new Rectangle(paddle.getX(), paddle.getY(), paddle.getWidth(), paddle.getHeight());
+        paddleRectangle.setFill(javafx.scene.paint.Color.WHITE);
+        root.getChildren().add(paddleRectangle);
+
+        //randomize the starting direction of the ball
+        ball.randomizeDirection();
     }
 }

@@ -2,10 +2,10 @@ package com.example.brickbreaker;
 
 public class Paddle {
     private int x;
-    private int y;
-    private int width;
-    private int height;
-    private int xSpeed;
+    private final int y;
+    private final int width;
+    private final int height;
+    private final int xSpeed;
 
     public Paddle(int x, int y, int width, int height, int xSpeed) {
         this.x = x;

@@ -6,8 +6,8 @@ import javafx.scene.shape.Rectangle;
 public class Wall {
     private int x;
     private int y;
-    private int width;
-    private int height;
+    private final int width;
+    private final int height;
 
     public Wall(int x, int y, int width, int height) {
         this.x = x;
